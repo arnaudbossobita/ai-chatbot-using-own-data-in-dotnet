@@ -7,10 +7,29 @@ using dotenv.net;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         var openAiKey = RequireEnv("OPENAI_API_KEY");
         Console.WriteLine("Using OpenAI API Key: " + openAiKey[..5] + "*****");
+
+        var vectors = new List<(string Word, float[] Vector)>();
+        var embedder = new EmbeddingClient(
+            model: "text-embedding-3-small",
+            apiKey: openAiKey
+        ).AsIEmbeddingGenerator();
+
+        var words = new[] {"cat", "mouse", "lion", "tiger", "helicopter", "train", "blue", "carrot", "space"};
+
+        for (var i = 0; i < words.Length; i++)
+        {
+            var embedding = await embedder.GenerateAsync(words[i], 
+                new Microsoft.Extensions.AI.EmbeddingGenerationOptions { Dimensions = 512 });
+
+            var vector = embedding.Vector.ToArray();
+            vectors.Add((words[i], vector));
+        }
+
+        SaveCsv(vectors, "animals.csv");
     }
 
     #region Helpers
@@ -71,14 +90,14 @@ class Program
 
         // Write CSV: id,title,x,y (culture-invariant)
         using var sw = new StreamWriter(filePath, false, Encoding.UTF8);
-        sw.WriteLine("id,title,x,y");
+        sw.WriteLine("Word,X,Y");
         
         for (int i = 0; i < n; i++)
         {
             var x = Y[i, 0];
             var y = Y[i, 1];
             sw.WriteLine(
-                $"{i},{CsvEscape(data[i].Word)},{x.ToString(CultureInfo.InvariantCulture)},{y.ToString(CultureInfo.InvariantCulture)}"
+                $"{CsvEscape(data[i].Word)},{x.ToString(CultureInfo.InvariantCulture)},{y.ToString(CultureInfo.InvariantCulture)}"
             );
         }
     }
