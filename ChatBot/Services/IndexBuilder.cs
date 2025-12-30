@@ -7,7 +7,8 @@ namespace ChatBot.Services;
 public class IndexBuilder(
     // Class dependencies
     StringEmbeddingGenerator embeddingGenerator,
-    IndexClient pineconeIndex,
+    // IndexClient pineconeIndex,
+    [FromKeyedServices("wikipedia-landmarks")] IndexClient pineconeIndex,
     WikipediaClient wikipediaClient,
     DocumentStore documentStore)
 {

@@ -10,8 +10,13 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.1.1" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.1-preview.1.25612.2" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.66.0" />
     <PackageReference Include="Pinecone.Client" Version="4.0.2" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);SKEXP0050</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Models\" />

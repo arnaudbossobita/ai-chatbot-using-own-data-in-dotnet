@@ -3,13 +3,13 @@ using Pinecone;
 
 namespace ChatBot.Services;
 
-public class VectorSearchService(
+public class VectorSearchServiceChunk(
     StringEmbeddingGenerator embeddingGenerator,
     // Pinecone.IndexClient pineconeIndex,
-    [FromKeyedServices("wikipedia-landmarks")] IndexClient pineconeIndex,
-    DocumentStore contentStore)
+    [FromKeyedServices("landmark-chunks")] IndexClient pineconeIndex,
+    DocumentChunkStore contentStore)
 {
-    public async Task<List<Document>> FindTopKArticles(string query, int k)
+    public async Task<List<DocumentChunk>> FindTopKArticles(string query, int k)
     {
         if (string.IsNullOrWhiteSpace(query))
             return [];
@@ -33,7 +33,7 @@ public class VectorSearchService(
             return [];
 
         var ids = matches.Select(m => m.Id!).Where(id => !string.IsNullOrEmpty(id));
-        var articles = contentStore.GetDocuments(ids);
+        var articles = contentStore.GetDocumentChunks(ids);
 
         var scoreById = matches.Where(m => m.Id is not null)
                                .ToDictionary(m => m.Id!, m => m.Score);

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Search Demo</title>
+    <title>Search Demo (Chunks)</title>
     <!-- Tailwind (Play CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React and ReactDOM from CDN -->
@@ -34,7 +34,7 @@
           setError(null);
           setResults([]);
           try {
-            const res = await fetch(`http://localhost:5108/search?query=${encodeURIComponent(q.trim())}`, {
+            const res = await fetch(`http://localhost:5108/search-chunk?query=${encodeURIComponent(q.trim())}`, {
               method: "GET",
               headers: { "Content-Type": "application/json" }
             });
@@ -54,7 +54,7 @@
           <div className="min-h-screen bg-neutral-100">
             <header className="sticky top-0 bg-white border-b">
               <div className="mx-auto max-w-4xl px-6 py-4 flex items-center justify-between">
-                <h1 className="text-xl font-semibold">🔎 Search Demo</h1>
+                <h1 className="text-xl font-semibold">🔎 Search Demo (Chunks)</h1>
               </div>
             </header>
 

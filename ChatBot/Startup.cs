@@ -28,11 +28,23 @@ static class Startup
                 apiKey: openAiKey
             ).AsIEmbeddingGenerator());
 
-        builder.Services.AddSingleton<IndexClient>(s => new PineconeClient(pineconeKey).Index("wikipedia-landmarks"));
-
+        // Landmark chunks index search
+        // builder.Services.AddSingleton<IndexClient>(s => new PineconeClient(pineconeKey).Index("wikipedia-landmarks"));
+        builder.Services.AddKeyedSingleton<IndexClient>("wikipedia-landmarks", (s, k) => 
+            new PineconeClient(pineconeKey).Index("wikipedia-landmarks"));
+        builder.Services.AddSingleton<VectorSearchService>();
         builder.Services.AddSingleton<WikipediaClient>();
         builder.Services.AddSingleton<IndexBuilder>();
         builder.Services.AddSingleton<DocumentStore>();
-        builder.Services.AddSingleton<VectorSearchService>();
+
+        // Full landmark index search
+        // builder.Services.AddSingleton<IndexClient>(s => new PineconeClient(pineconeKey).Index("landmark-chunks"));
+        builder.Services.AddKeyedSingleton<IndexClient>("landmark-chunks", (s, k) => 
+            new PineconeClient(pineconeKey).Index("landmark-chunks"));
+        builder.Services.AddSingleton<VectorSearchServiceChunk>();
+        builder.Services.AddSingleton<WikipediaClientChunk>();
+        builder.Services.AddSingleton<IndexBuilderChunk>();
+        builder.Services.AddSingleton<DocumentChunkStore>();
+        builder.Services.AddSingleton<ArticleSplitter>();
     }
 }
