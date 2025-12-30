@@ -1,41 +1,24 @@
+using ChatBot;
+using ChatBot.Services;
+// using Indexer;
+
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
+Startup.ConfigureServices(builder);
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// Use CORS policy defined in Startup.cs
+// It allows the API response to be accessed from our frontend (running on localhost:3000)
+app.UseCors("FrontendCors");
 
-app.UseHttpsRedirection();
+// // Uncomment to do indexing when you run the project (you only need to do this once)...
+// var indexer = app.Services.GetRequiredService<IndexBuilder>();
+// await indexer.BuildDocumentIndex(SourceData.LandmarkNames);
 
-var summaries = new[]
+// GET /search?query=...
+app.MapGet("/search", async (string query, VectorSearchService search) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var results = await search.FindTopKArticles(query, 3);
+    return Results.Ok(results);
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

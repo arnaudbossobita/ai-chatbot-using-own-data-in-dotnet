@@ -14,8 +14,8 @@ public partial class WikipediaClient
     static WikipediaClient()
     {
         WikipediaHttpClient.DefaultRequestHeaders.UserAgent.Clear();
-        WikipediaHttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AICourseBot", "1.0"));
-        WikipediaHttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(contact:you@example.com)"));
+        WikipediaHttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AICourseBot", "1.0")); // Application name and version
+        WikipediaHttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(contact:you@example.com)")); //This is to tell Wikipedia who we are, just being a good citizen
     }
 
     private static readonly JsonSerializerOptions JsonOpts = new()
@@ -23,6 +23,7 @@ public partial class WikipediaClient
         PropertyNameCaseInsensitive = true
     };
 
+    // Following are classes to deserialize Wikipedia API response
     private sealed class WikiApiResponse
     {
         [JsonPropertyName("query")]
@@ -50,6 +51,12 @@ public partial class WikipediaClient
         public bool? Missing { get; set; }
     }
 
+    /// <summary>
+    /// Creates a Wikipedia API URL to fetch the page extract for a given title.
+    /// </summary>
+    /// <param name="pageTitle"></param>
+    /// <param name="full"></param>
+    /// <returns></returns>
     static string CreateWikipediaUrl(string pageTitle, bool full)
     {
         var ub = new UriBuilder("https://en.wikipedia.org/w/api.php");
@@ -74,6 +81,11 @@ public partial class WikipediaClient
         return ub.ToString();
     }
 
+    /// <summary>
+    /// Fetches a Wikipedia page given its API URL and returns a Document object.
+    /// </summary>
+    /// <param name="url">The Wikipedia API URL.</param>
+    /// <returns>A Document representing the Wikipedia page.</returns>
     static async Task<Document> GetWikipediaPage(string url)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -106,42 +118,15 @@ public partial class WikipediaClient
         );
     }
 
+    /// <summary>
+    /// Fetches a Wikipedia page for a given title.
+    /// </summary>
+    /// <param name="title">The title of the Wikipedia page.</param>
+    /// <param name="full">Whether to fetch the full page or just the introduction.</param>
+    /// <returns>A Document representing the Wikipedia page.</returns>
     public Task<Document> GetWikipediaPageForTitle(string title, bool full = false)
     {
         var url = CreateWikipediaUrl(title, full);
         return GetWikipediaPage(url);
     }
-
-    [GeneratedRegex(@"^\s*=+\s*(.+?)\s*=+\s*", RegexOptions.Multiline | RegexOptions.Compiled)]
-    private static partial Regex HeadingRegex();
-
-    public IEnumerable<(string Title, string Content)> SplitIntoSections(string articleText)
-    {
-        var matches = HeadingRegex().Matches(articleText);
-
-        if (matches.Count == 0)
-        {
-            yield return ("Introduction", articleText[..]);
-            yield break;
-        }
-
-        // Returns any text before the first markdown heading as "Introduction"
-        if (matches[0].Index > 0)
-            yield return ("Introduction", articleText[..matches[0].Index]);
-
-        for (int i = 0; i < matches.Count; i++)
-        {
-            var m = matches[i];
-            string sectionName = m.Groups[1].Value.Trim();
-            if (sectionName is "See also" or "References" or "External links" or "Notes")
-                continue;
-
-            int bodyStart = m.Index + m.Length;
-            int bodyEnd = (i < matches.Count - 1) ? matches[i + 1].Index : articleText.Length;
-            int length = bodyEnd - bodyStart;
-            var content = articleText.Substring(bodyStart, length);
-            yield return (sectionName, content);
-        }
-    }
-
 }
