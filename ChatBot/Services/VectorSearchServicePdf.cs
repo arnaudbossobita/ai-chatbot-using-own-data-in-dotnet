@@ -8,7 +8,7 @@ public class VectorSearchServicePdf(
     [FromKeyedServices("wikipedia-landmarks-pdf")] IndexClient pineconeIndex,
     DocumentPdfStore contentStore)
 {
-    public async Task<List<Document>> FindTopKArticles(string query, int k)
+    public async Task<List<DocumentPdf>> FindTopKArticles(string query, int k)
     {
         if (string.IsNullOrWhiteSpace(query))
             return [];
@@ -37,7 +37,7 @@ public class VectorSearchServicePdf(
         var scoreById = matches.Where(m => m.Id is not null)
                                .ToDictionary(m => m.Id!, m => m.Score);
 
-        var ordered = articles.OrderByDescending(a => scoreById.GetValueOrDefault(a.Id, 0f))
+        var ordered = articles.OrderBy(a => a.PageNumber.HasValue ? a.PageNumber.Value : - scoreById.GetValueOrDefault(a.Id, 0f))
                               .Take(k)
                               .ToList();
 

@@ -30,10 +30,10 @@ public class PdfReaderService
     /// Assumes the PDF contains landmark information with clear section separators.
     /// You may need to customize this based on your PDF structure.
     /// </summary>
-    public List<Document> ParseLandmarksFromPdf(string pdfFilePath)
+    public List<DocumentPdf> ParseLandmarksFromPdf(string pdfFilePath)
     {
         using var document = PdfDocument.Open(pdfFilePath);
-        var documents = new List<Document>();
+        var documents = new List<DocumentPdf>();
 
         // Option 1: Treat entire PDF as one document
         var fullText = string.Empty;
@@ -42,11 +42,12 @@ public class PdfReaderService
             fullText += page.Text + "\n\n";
         }
 
-        var doc = new Document(
+        var doc = new DocumentPdf(
             Id: Guid.NewGuid().ToString(),
             Title: Path.GetFileNameWithoutExtension(pdfFilePath),
             Content: fullText.Trim(),
-            PageUrl: $"file:///{pdfFilePath}"
+            PageUrl: $"file:///{pdfFilePath}",
+            PageNumber: null
         );
 
         documents.Add(doc);
@@ -58,10 +59,10 @@ public class PdfReaderService
     /// Alternative method: Parse PDF with page-level granularity
     /// Each page becomes a separate document
     /// </summary>
-    public List<Document> ParseLandmarksByPage(string pdfFilePath)
+    public List<DocumentPdf> ParseLandmarksByPage(string pdfFilePath)
     {
         using var document = PdfDocument.Open(pdfFilePath);
-        var documents = new List<Document>();
+        var documents = new List<DocumentPdf>();
 
         foreach (Page page in document.GetPages())
         {
@@ -69,11 +70,12 @@ public class PdfReaderService
             if (string.IsNullOrWhiteSpace(pageText))
                 continue;
 
-            var doc = new Document(
+            var doc = new DocumentPdf(
                 Id: $"{Path.GetFileNameWithoutExtension(pdfFilePath)}_page_{page.Number}",
                 Title: $"{Path.GetFileNameWithoutExtension(pdfFilePath)} - Page {page.Number}",
                 Content: pageText,
-                PageUrl: $"file:///{pdfFilePath}#page={page.Number}"
+                PageUrl: $"file:///{pdfFilePath}#page={page.Number}",
+                PageNumber: page.Number
             );
 
             documents.Add(doc);
@@ -117,7 +119,7 @@ public class PdfReaderService
     /// Advanced method: Parse PDF with custom section separators
     /// Useful if your PDF has clear section markers (e.g., "## Landmark Name")
     /// </summary>
-    public List<Document> ParseLandmarksWithSeparator(string pdfFilePath, string sectionPattern = @"(?m)^##\s+(.+)$")
+    public List<DocumentPdf> ParseLandmarksWithSeparator(string pdfFilePath, string sectionPattern = @"(?m)^##\s+(.+)$")
     {
         var fullText = string.Empty;
         using (var document = PdfDocument.Open(pdfFilePath))
@@ -128,7 +130,7 @@ public class PdfReaderService
             }
         }
 
-        var documents = new List<Document>();
+        var documents = new List<DocumentPdf>();
         var regex = new System.Text.RegularExpressions.Regex(sectionPattern);
         var matches = regex.Matches(fullText);
 
@@ -142,11 +144,12 @@ public class PdfReaderService
 
             if (!string.IsNullOrWhiteSpace(content))
             {
-                var doc = new Document(
+                var doc = new DocumentPdf(
                     Id: Guid.NewGuid().ToString(),
                     Title: title,
                     Content: content,
-                    PageUrl: $"file:///{pdfFilePath}"
+                    PageUrl: $"file:///{pdfFilePath}",
+                    PageNumber: null
                 );
 
                 documents.Add(doc);

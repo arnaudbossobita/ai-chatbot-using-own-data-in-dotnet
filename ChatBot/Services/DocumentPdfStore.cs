@@ -20,13 +20,14 @@ public class DocumentPdfStore
                 Id TEXT PRIMARY KEY,
                 Title TEXT,
                 Content TEXT,
-                PageUrl TEXT
+                PageUrl TEXT,
+                PageNumber INTEGER
             );
         ;";
         cmd.ExecuteNonQuery();
     }
 
-    public List<Document> GetDocuments(IEnumerable<string> ids)
+    public List<DocumentPdf> GetDocuments(IEnumerable<string> ids)
     {
         var idList = ids?.Distinct().ToList() ?? [];
         if (idList.Count == 0) return [];
@@ -50,39 +51,41 @@ public class DocumentPdfStore
             " END";
 
         cmd.CommandText = $@"
-            SELECT Id, Title, Content, PageUrl
+            SELECT Id, Title, Content, PageUrl, PageNumber
             FROM Documents
             WHERE Id IN ({string.Join(", ", paramNames)})
             ORDER BY {orderByCase};";
 
-        var results = new List<Document>();
+        var results = new List<DocumentPdf>();
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            results.Add(new Document(
+            results.Add(new DocumentPdf(
                 Id: reader.GetString(0),
                 Title: reader.GetString(1),
                 Content: reader.GetString(2),
-                PageUrl: reader.GetString(3)
+                PageUrl: reader.GetString(3),
+                PageNumber: reader.GetInt32(4)
             ));
         }
 
         return results;
     }
 
-    public void SaveDocument(Document document)
+    public void SaveDocument(DocumentPdf document)
     {
         using var conn = new SqliteConnection($"Data Source={DbFile}");
         conn.Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             INSERT OR REPLACE INTO Documents
-                (Id, Title, Content, PageUrl)
-            VALUES ($id, $title, $content, $pageUrl);";
+                (Id, Title, Content, PageUrl, PageNumber)
+            VALUES ($id, $title, $content, $pageUrl, $pageNumber);";
         cmd.Parameters.AddWithValue("$id", document.Id);
         cmd.Parameters.AddWithValue("$title", document.Title);
         cmd.Parameters.AddWithValue("$content", document.Content);
         cmd.Parameters.AddWithValue("$pageUrl", document.PageUrl);
+        cmd.Parameters.AddWithValue("$pageNumber", document.PageNumber);
         cmd.ExecuteNonQuery();
     }
 }

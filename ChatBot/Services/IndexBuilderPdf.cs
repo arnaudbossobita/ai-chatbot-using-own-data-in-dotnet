@@ -19,40 +19,44 @@ public class IndexBuilderPdf(
     /// <param name="parseByPage">If true, each PDF page becomes a separate document. If false, treats entire PDF as one document.</param>
     public async Task BuildDocumentIndexFromPdf(string pdfFilePath, bool parseByPage = false)
     {
-        if (!File.Exists(pdfFilePath))
+        if (!Directory.Exists(pdfFilePath))
         {
-            throw new FileNotFoundException($"PDF file not found: {pdfFilePath}");
+            throw new FileNotFoundException($"PDF files path not found: {pdfFilePath}");
         }
 
-        // Parse the PDF into documents
-        var documents = parseByPage 
-            ? pdfReaderService.ParseLandmarksByPage(pdfFilePath)
-            : pdfReaderService.ParseLandmarksFromPdf(pdfFilePath);
-
-        foreach (var document in documents)
+        var pdfFiles = Directory.GetFiles(pdfFilePath, "*.pdf");
+        foreach (var pdfFile in pdfFiles)
         {
-            var embeddings = await embeddingGenerator.GenerateAsync(
-                [document.Content],
-                new EmbeddingGenerationOptions { Dimensions = 512 }
-            );
+            // Parse the PDF into documents
+            var documents = parseByPage 
+                ? pdfReaderService.ParseLandmarksByPage(pdfFile)
+                : pdfReaderService.ParseLandmarksFromPdf(pdfFile);
 
-            var vectorArray = embeddings[0].Vector.ToArray();
-            var pineconeVector = new Vector
+            foreach (var document in documents)
             {
-                Id = document.Id,
-                Values = vectorArray,
-                Metadata = new Metadata
+                var embeddings = await embeddingGenerator.GenerateAsync(
+                    [document.Content],
+                    new EmbeddingGenerationOptions { Dimensions = 512 }
+                );
+
+                var vectorArray = embeddings[0].Vector.ToArray();
+                var pineconeVector = new Vector
                 {
-                    { "title", document.Title }
-                }
-            };
+                    Id = document.Id,
+                    Values = vectorArray,
+                    Metadata = new Metadata
+                    {
+                        { "title", document.Title }
+                    }
+                };
 
-            await pineconeIndex.UpsertAsync(new UpsertRequest
-            {
-                Vectors = [pineconeVector]
-            });
+                await pineconeIndex.UpsertAsync(new UpsertRequest
+                {
+                    Vectors = [pineconeVector]
+                });
 
-            documentPdfStore.SaveDocument(document);
+                documentPdfStore.SaveDocument(document);
+            }
         }
     }
 

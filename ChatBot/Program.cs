@@ -19,7 +19,7 @@ app.UseCors("FrontendCors");
 // await indexerChunk.BuildIndex(SourceData.LandmarkNames);
 // Full landmark PDF indexing
 // var indexer = app.Services.GetRequiredService<IndexBuilderPdf>();
-// await indexer.BuildDocumentIndexFromPdf("Pdfs/Eiffel_Tower.pdf", parseByPage: true);
+// await indexer.BuildDocumentIndexFromPdf("Pdfs/", parseByPage: true);
 
 // GET /search?query=...
 // Full landmark search
