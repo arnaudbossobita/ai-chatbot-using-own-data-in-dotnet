@@ -56,6 +56,7 @@ static class Startup
         builder.Services.AddSingleton<IndexBuilderPdf>();
         builder.Services.AddSingleton<PdfReaderService>();
         builder.Services.AddSingleton<DocumentPdfStore>();
+        builder.Services.AddSingleton<RagQuestionServicePdf>();
 
 
         builder.Services.AddLogging(logging => logging.AddConsole().SetMinimumLevel(LogLevel.Information));

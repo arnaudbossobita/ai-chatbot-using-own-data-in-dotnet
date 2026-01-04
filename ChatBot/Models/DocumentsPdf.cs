@@ -5,5 +5,6 @@ public record DocumentPdf(
     string Title,
     string Content,
     string PageUrl,
+    string Name,
     int? PageNumber
 );

@@ -46,7 +46,8 @@ public class PdfReaderService
             Id: Guid.NewGuid().ToString(),
             Title: Path.GetFileNameWithoutExtension(pdfFilePath),
             Content: fullText.Trim(),
-            PageUrl: $"file:///{pdfFilePath}",
+            PageUrl: $"file://{pdfFilePath}",
+            Name: Path.GetFileName(pdfFilePath),
             PageNumber: null
         );
 
@@ -74,7 +75,8 @@ public class PdfReaderService
                 Id: $"{Path.GetFileNameWithoutExtension(pdfFilePath)}_page_{page.Number}",
                 Title: $"{Path.GetFileNameWithoutExtension(pdfFilePath)} - Page {page.Number}",
                 Content: pageText,
-                PageUrl: $"file:///{pdfFilePath}#page={page.Number}",
+                PageUrl: $"file://{pdfFilePath}#page={page.Number}",
+                Name: Path.GetFileName(pdfFilePath),
                 PageNumber: page.Number
             );
 
@@ -148,7 +150,8 @@ public class PdfReaderService
                     Id: Guid.NewGuid().ToString(),
                     Title: title,
                     Content: content,
-                    PageUrl: $"file:///{pdfFilePath}",
+                    PageUrl: $"file://{pdfFilePath}",
+                    Name: Path.GetFileName(pdfFilePath),
                     PageNumber: null
                 );
 

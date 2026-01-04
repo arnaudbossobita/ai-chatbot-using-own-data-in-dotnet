@@ -52,4 +52,11 @@ app.MapGet("/ask", async (string question, RagQuestionService rag) =>
     return Results.Ok(result);
 });
 
+// GET /ask-pdf?question=...
+app.MapGet("/ask-pdf", async (string question, RagQuestionServicePdf rag) =>
+{
+    var result = await rag.AnswerQuestion(question);
+    return Results.Ok(result);
+});
+
 app.Run();

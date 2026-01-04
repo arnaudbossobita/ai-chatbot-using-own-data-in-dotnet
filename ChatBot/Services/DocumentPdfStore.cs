@@ -21,6 +21,7 @@ public class DocumentPdfStore
                 Title TEXT,
                 Content TEXT,
                 PageUrl TEXT,
+                Name TEXT,
                 PageNumber INTEGER
             );
         ;";
@@ -51,7 +52,7 @@ public class DocumentPdfStore
             " END";
 
         cmd.CommandText = $@"
-            SELECT Id, Title, Content, PageUrl, PageNumber
+            SELECT Id, Title, Content, PageUrl, Name, PageNumber
             FROM Documents
             WHERE Id IN ({string.Join(", ", paramNames)})
             ORDER BY {orderByCase};";
@@ -65,7 +66,8 @@ public class DocumentPdfStore
                 Title: reader.GetString(1),
                 Content: reader.GetString(2),
                 PageUrl: reader.GetString(3),
-                PageNumber: reader.GetInt32(4)
+                Name: reader.GetString(4),
+                PageNumber: reader.GetInt32(5)
             ));
         }
 
@@ -79,12 +81,13 @@ public class DocumentPdfStore
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             INSERT OR REPLACE INTO Documents
-                (Id, Title, Content, PageUrl, PageNumber)
-            VALUES ($id, $title, $content, $pageUrl, $pageNumber);";
+                (Id, Title, Content, PageUrl, Name, PageNumber)
+            VALUES ($id, $title, $content, $pageUrl, $name, $pageNumber);";
         cmd.Parameters.AddWithValue("$id", document.Id);
         cmd.Parameters.AddWithValue("$title", document.Title);
         cmd.Parameters.AddWithValue("$content", document.Content);
         cmd.Parameters.AddWithValue("$pageUrl", document.PageUrl);
+        cmd.Parameters.AddWithValue("$name", document.Name);
         cmd.Parameters.AddWithValue("$pageNumber", document.PageNumber);
         cmd.ExecuteNonQuery();
     }
