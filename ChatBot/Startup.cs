@@ -34,6 +34,7 @@ static class Startup
             new PineconeClient(pineconeKey).Index("wikipedia-landmarks"));
         builder.Services.AddSingleton<VectorSearchService>();
         builder.Services.AddSingleton<WikipediaClient>();
+        builder.Services.AddSingleton<PdfReaderService>();
         builder.Services.AddSingleton<IndexBuilder>();
         builder.Services.AddSingleton<DocumentStore>();
 
@@ -46,6 +47,15 @@ static class Startup
         builder.Services.AddSingleton<IndexBuilderChunk>();
         builder.Services.AddSingleton<DocumentChunkStore>();
         builder.Services.AddSingleton<ArticleSplitter>();
+
+        // Full landmark index search from PDFs
+        // builder.Services.AddSingleton<IndexClient>(s => new PineconeClient(pineconeKey).Index("wikipedia-landmarks-pdf"));
+        builder.Services.AddKeyedSingleton<IndexClient>("wikipedia-landmarks-pdf", (s, k) => 
+            new PineconeClient(pineconeKey).Index("wikipedia-landmarks-pdf"));
+        builder.Services.AddSingleton<VectorSearchServicePdf>();
+        builder.Services.AddSingleton<IndexBuilderPdf>();
+        builder.Services.AddSingleton<PdfReaderService>();
+        builder.Services.AddSingleton<DocumentPdfStore>();
 
 
         builder.Services.AddLogging(logging => logging.AddConsole().SetMinimumLevel(LogLevel.Information));

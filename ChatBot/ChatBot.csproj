@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.1-preview.1.25612.2" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.66.0" />
     <PackageReference Include="Pinecone.Client" Version="4.0.2" />
+    <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -20,12 +21,15 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
+    <Folder Include="Pdfs\" />
     <Folder Include="Prompts\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="Prompts\*.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Pdfs\*.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
