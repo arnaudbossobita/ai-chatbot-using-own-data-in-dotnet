@@ -34,4 +34,11 @@ app.MapGet("/search-chunk", async (string query, VectorSearchServiceChunk search
     return Results.Ok(results);
 });
 
+// GET /ask?question=...
+app.MapGet("/ask", async (string question, RagQuestionService rag) =>
+{
+    var result = await rag.AnswerQuestion(question);
+    return Results.Ok(result);
+});
+
 app.Run();

@@ -46,5 +46,35 @@ static class Startup
         builder.Services.AddSingleton<IndexBuilderChunk>();
         builder.Services.AddSingleton<DocumentChunkStore>();
         builder.Services.AddSingleton<ArticleSplitter>();
+
+
+        builder.Services.AddLogging(logging => logging.AddConsole().SetMinimumLevel(LogLevel.Information));
+
+        builder.Services.AddSingleton<ILoggerFactory>(sp =>
+            LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Information)));
+
+        builder.Services.AddSingleton<IChatClient>(sp =>
+        {
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+            var client = new OpenAI.Chat.ChatClient(
+                "gpt-4.1-mini",
+                openAiKey).AsIChatClient();
+
+            return new ChatClientBuilder(client)
+                .UseLogging(loggerFactory)
+                .UseFunctionInvocation(loggerFactory, c => 
+                {
+                    c.IncludeDetailedErrors = true; // Errors details for debugging logged in the logger
+                })
+                .Build(sp);
+        });
+
+        builder.Services.AddTransient<ChatOptions>(sp => new ChatOptions
+        {
+        });
+
+        builder.Services.AddSingleton<RagQuestionService>();
+        builder.Services.AddSingleton<ArticleSplitter>();
+        builder.Services.AddSingleton<PromptService>();
     }
 }
